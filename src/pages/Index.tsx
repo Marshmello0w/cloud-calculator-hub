@@ -1,13 +1,49 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { PenaltyCalculator } from '@/components/PenaltyCalculator';
+import { AuthLogin } from '@/components/AuthLogin';
+import { AdminPanel } from '@/components/AdminPanel';
+
+interface User {
+  email: string;
+  isAdmin: boolean;
+}
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState<'calculator' | 'admin'>('calculator');
+
+  const handleLogin = (email: string, isAdmin: boolean) => {
+    setUser({ email, isAdmin });
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentView('calculator');
+  };
+
+  const showAdminPanel = () => {
+    setCurrentView('admin');
+  };
+
+  const showCalculator = () => {
+    setCurrentView('calculator');
+  };
+
+  if (!user) {
+    return <AuthLogin onLogin={handleLogin} />;
+  }
+
+  if (currentView === 'admin' && user.isAdmin) {
+    return <AdminPanel onBack={showCalculator} />;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <PenaltyCalculator
+      onLogout={handleLogout}
+      userEmail={user.email}
+      isAdmin={user.isAdmin}
+      onShowAdminPanel={user.isAdmin ? showAdminPanel : undefined}
+    />
   );
 };
 
