@@ -1,43 +1,40 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Scale, Mail, Lock, UserPlus } from 'lucide-react';
+import { Scale } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthLoginProps {
   onLogin: (email: string, isAdmin: boolean) => void;
 }
 
 export function AuthLogin({ onLogin }: AuthLoginProps) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDiscordLogin = async () => {
     setIsLoading(true);
 
     try {
-      // Simulate authentication - in real app this would use Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock admin detection
-      const isAdmin = email.includes('admin');
-      
-      onLogin(email, isAdmin);
-      
-      toast({
-        title: isLogin ? "Anmeldung erfolgreich" : "Registrierung erfolgreich",
-        description: `Willkommen ${isAdmin ? 'Admin' : 'Benutzer'}!`
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
       });
+
+      if (error) {
+        toast({
+          title: "Fehler",
+          description: "Discord-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        title: "Fehler", 
+        description: "Discord-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
         variant: "destructive"
       });
     } finally {
@@ -59,90 +56,35 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
             Strafgesetzbuch Los Santos
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isLogin ? 'Melden Sie sich an' : 'Erstellen Sie ein Konto'}
+            Melden Sie sich mit Discord an
           </p>
         </div>
 
-        {/* Login/Register Form */}
+        {/* Discord Login */}
         <Card className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  E-Mail Adresse
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="ihre.email@beispiel.de"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Passwort
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
+          <div className="space-y-6">
             <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={handleDiscordLogin}
+              className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white"
               disabled={isLoading}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  {isLogin ? 'Anmelden...' : 'Registrieren...'}
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Anmelden...
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  {isLogin ? <Mail className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                  {isLogin ? 'Anmelden' : 'Registrieren'}
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/>
+                  </svg>
+                  Mit Discord anmelden
                 </div>
               )}
             </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isLogin ? 'Noch kein Konto? ' : 'Bereits ein Konto? '}
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-primary hover:text-primary/80 font-medium"
-              >
-                {isLogin ? 'Registrieren' : 'Anmelden'}
-              </button>
-            </p>
-          </div>
-
-          {/* Demo Accounts */}
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-            <h4 className="text-sm font-medium text-foreground mb-2">Demo Konten:</h4>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><strong>Admin:</strong> admin@los-santos.de</p>
-              <p><strong>Benutzer:</strong> user@los-santos.de</p>
-              <p><em>Beliebiges Passwort verwenden</em></p>
+            
+            <div className="text-center text-sm text-muted-foreground">
+              Sichere Anmeldung über Discord OAuth
             </div>
           </div>
         </Card>
