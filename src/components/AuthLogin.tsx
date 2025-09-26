@@ -20,7 +20,7 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: new URL('.', window.location.href).toString()
         }
       });
 
