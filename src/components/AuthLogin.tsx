@@ -12,7 +12,7 @@ interface AuthLoginProps {
 }
 
 export function AuthLogin({ onLogin }: AuthLoginProps) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -27,7 +27,7 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
       
       if (isSignUp) {
         result = await supabase.auth.signUp({
-          email: `${username}@example.com`, // Convert username to email format
+          email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`
@@ -35,7 +35,7 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
         });
       } else {
         result = await supabase.auth.signInWithPassword({
-          email: `${username}@example.com`, // Convert username to email format
+          email,
           password
         });
       }
@@ -87,14 +87,14 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
         <Card className="p-8">
           <form onSubmit={handleAuth} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username">Benutzername</Label>
+              <Label htmlFor="email">E-Mail</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="Ihr Benutzername"
+                placeholder="ihre-email@beispiel.de"
               />
             </div>
             
