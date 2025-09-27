@@ -38,6 +38,12 @@ const Index = () => {
           setUserData(null);
         }
         
+        // Normalize OAuth hash for HashRouter after Supabase processed it
+        if (window.location.hash && (/access_token=|refresh_token=|error=/.test(window.location.hash))) {
+          const cleanUrl = `${window.location.pathname}${window.location.search}#/`;
+          window.history.replaceState(null, '', cleanUrl);
+        }
+        
         setIsLoading(false);
       }
     );
@@ -56,6 +62,12 @@ const Index = () => {
           email: email,
           isAdmin: isAdmin
         });
+      }
+      
+      // Normalize OAuth hash for HashRouter on initial load too
+      if (window.location.hash && (/access_token=|refresh_token=|error=/.test(window.location.hash))) {
+        const cleanUrl = `${window.location.pathname}${window.location.search}#/`;
+        window.history.replaceState(null, '', cleanUrl);
       }
       
       setIsLoading(false);
