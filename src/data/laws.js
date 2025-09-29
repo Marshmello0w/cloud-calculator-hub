@@ -152,3 +152,6 @@ const laws = [
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = laws;
 }
+
+// ES6 export for use in TypeScript/modern JavaScript
+export { laws };
