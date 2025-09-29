@@ -15,7 +15,6 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -23,22 +22,10 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
     setIsLoading(true);
 
     try {
-      let result;
-      
-      if (isSignUp) {
-        result = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        });
-      } else {
-        result = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-      }
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
       const { error } = result;
 
@@ -47,11 +34,6 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
           title: "Fehler",
           description: error.message,
           variant: "destructive"
-        });
-      } else if (isSignUp) {
-        toast({
-          title: "Registrierung erfolgreich",
-          description: "Bitte überprüfen Sie Ihre E-Mail für die Bestätigung.",
         });
       }
     } catch (error) {
@@ -79,7 +61,7 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
             Strafgesetzbuch Los Santos
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isSignUp ? 'Neues Konto erstellen' : 'Bei Ihrem Konto anmelden'}
+            Bei Ihrem Konto anmelden
           </p>
         </div>
 
@@ -118,25 +100,12 @@ export function AuthLogin({ onLogin }: AuthLoginProps) {
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {isSignUp ? 'Registrieren...' : 'Anmelden...'}
+                  Anmelden...
                 </div>
               ) : (
-                isSignUp ? 'Registrieren' : 'Anmelden'
+                'Anmelden'
               )}
             </Button>
-            
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                {isSignUp 
-                  ? 'Bereits ein Konto? Hier anmelden' 
-                  : 'Noch kein Konto? Hier registrieren'
-                }
-              </button>
-            </div>
           </form>
         </Card>
       </div>
