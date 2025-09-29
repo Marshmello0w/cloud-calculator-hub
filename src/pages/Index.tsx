@@ -18,9 +18,11 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[Index] mounted');
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[Index] onAuthStateChange', { event, user: session?.user?.email });
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -42,6 +44,7 @@ const Index = () => {
         if (window.location.hash && (/access_token=|refresh_token=|error=/.test(window.location.hash))) {
           const cleanUrl = `${window.location.pathname}${window.location.search}#/`;
           window.history.replaceState(null, '', cleanUrl);
+          console.log('[Index] OAuth hash normalized to', cleanUrl);
         }
         
         setIsLoading(false);
@@ -49,29 +52,36 @@ const Index = () => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const email = session.user.email || '';
-        const username = session.user.user_metadata?.full_name || '';
-        const isAdmin = email.includes('admin') || username.toLowerCase().includes('admin');
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        console.log('[Index] getSession', { hasSession: !!session, user: session?.user?.email });
+        setSession(session);
+        setUser(session?.user ?? null);
         
-        setUserData({
-          email: email,
-          isAdmin: isAdmin
-        });
-      }
-      
-      // Normalize OAuth hash for HashRouter on initial load too
-      if (window.location.hash && (/access_token=|refresh_token=|error=/.test(window.location.hash))) {
-        const cleanUrl = `${window.location.pathname}${window.location.search}#/`;
-        window.history.replaceState(null, '', cleanUrl);
-      }
-      
-      setIsLoading(false);
-    });
+        if (session?.user) {
+          const email = session.user.email || '';
+          const username = session.user.user_metadata?.full_name || '';
+          const isAdmin = email.includes('admin') || username.toLowerCase().includes('admin');
+          
+          setUserData({
+            email: email,
+            isAdmin: isAdmin
+          });
+        }
+        
+        // Normalize OAuth hash for HashRouter on initial load too
+        if (window.location.hash && (/access_token=|refresh_token=|error=/.test(window.location.hash))) {
+          const cleanUrl = `${window.location.pathname}${window.location.search}#/`;
+          window.history.replaceState(null, '', cleanUrl);
+          console.log('[Index] OAuth hash normalized on initial load to', cleanUrl);
+        }
+        
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        console.error('[Index] getSession error', e);
+        setIsLoading(false);
+      });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -94,6 +104,7 @@ const Index = () => {
   };
 
   if (isLoading) {
+    console.log('[Index] Rendering loading spinner');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -102,13 +113,16 @@ const Index = () => {
   }
 
   if (!user || !userData) {
+    console.log('[Index] Rendering AuthLogin', { user: !!user, userData: !!userData });
     return <AuthLogin onLogin={handleLogin} />;
   }
 
   if (currentView === 'admin' && userData.isAdmin) {
+    console.log('[Index] Rendering AdminPanel');
     return <AdminPanel onBack={showCalculator} />;
   }
 
+  console.log('[Index] Rendering PenaltyCalculator', { isAdmin: userData.isAdmin });
   return (
     <PenaltyCalculator
       onLogout={handleLogout}
